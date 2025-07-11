@@ -1,6 +1,94 @@
 const admin = require("firebase-admin");
 const axios = require("axios");
 const db = admin.firestore();
+const querystring = require("querystring");
+
+exports.redirectToGitHubOAuth = (req, res) => {
+  const clientId = process.env.GITHUB_CLIENT_ID;
+
+  if (!clientId) {
+    return res
+      .status(500)
+      .json({
+        error: "Missing GitHub client ID",
+      });
+  }
+
+  const params = querystring.stringify({
+    client_id: clientId,
+    scope: "user:email",
+  });
+
+  const githubAuthUrl = `https://github.com/login/oauth/authorize?${params}`;
+  res.redirect(githubAuthUrl);
+};
+
+exports.handleGitHubOAuthCallback = async (
+  req,
+  res
+) => {
+  const code = req.query.code;
+  const clientId = process.env.GITHUB_CLIENT_ID;
+  const clientSecret =
+    process.env.GITHUB_CLIENT_SECRET;
+
+  if (!code || !clientId || !clientSecret) {
+    return res
+      .status(400)
+      .json({
+        error:
+          "Missing code or client credentials",
+      });
+  }
+
+  try {
+    const response = await axios.post(
+      `https://github.com/login/oauth/access_token`,
+      {
+        client_id: clientId,
+        client_secret: clientSecret,
+        code: code,
+      },
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    const { access_token } = response.data;
+
+    if (!access_token) {
+      return res
+        .status(400)
+        .json({
+          error:
+            "GitHub access token not received",
+        });
+    }
+
+    const userInfo = await axios.get(
+      "https://api.github.com/user",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    res.status(200).json({
+      accessToken: access_token,
+      user: userInfo.data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: "GitHub OAuth failed",
+      detail: error.message,
+    });
+  }
+};
+
 
 // 1. GET /repositories/:repositoryId/github-info
 exports.getGitHubInfo = async (req, res) => {
