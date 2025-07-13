@@ -9,6 +9,7 @@ import HomePage from "../pages/HomePage";
 import SignupPage from "../pages/SignupPages";
 import SigninPage from "../pages/SigninPage";
 import Dashboard from "../pages/Dashboard";
+import BoardDetailPage from "../components/boards/BoardDetailPage";
 
 // auth step
 const PrivateRoute = ({ children }) => {
@@ -41,6 +42,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/boards/:id"
+          element={
+            <PrivateRoute>
+              <BoardDetailPage />
             </PrivateRoute>
           }
         />
