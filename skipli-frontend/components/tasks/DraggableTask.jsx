@@ -1,6 +1,10 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { statusColors } from "./taskStatusColors";
+import {
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 export default function TaskItem({
   task,
@@ -103,14 +107,16 @@ export default function TaskItem({
       <div className="flex gap-3 text-sm text-blue-600 mt-2">
         <button
           onClick={() => onEdit(task)}
-          className="hover:underline"
+          className=" hover:underline text-sm flex items-center gap-1"
         >
+          <PencilIcon className="w-4 h-4" />
           Edit
         </button>
         <button
           onClick={() => onDelete(task.id)}
-          className="text-red-600 hover:underline"
+          className="text-red-500 hover:underline text-sm flex items-center gap-1"
         >
+          <TrashIcon className="w-4 h-4" />
           Delete
         </button>
       </div>

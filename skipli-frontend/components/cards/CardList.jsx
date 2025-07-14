@@ -1,4 +1,8 @@
 import { Link } from "react-router-dom";
+import {
+  PencilIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
 export default function CardList({
   cards,
@@ -27,7 +31,7 @@ export default function CardList({
       {filteredCards.map((card) => (
         <div
           key={card.id}
-          className="p-4 bg-white shadow rounded border hover:shadow-md relative"
+          className="p-4 bg-white dark:bg-gray-300 shadow rounded border hover:shadow-md  relative"
         >
           <Link to={`cards/${card.id}`}>
             <h3 className="text-lg font-semibold hover:underline">
@@ -48,14 +52,16 @@ export default function CardList({
           <div className="absolute top-2 right-2 flex gap-2">
             <button
               onClick={() => onEdit(card)}
-              className="text-blue-500 hover:underline text-sm"
+              className="text-blue-500 hover:underline text-sm flex items-center gap-1"
             >
+              <PencilIcon className="w-4 h-4" />
               Edit
             </button>
             <button
               onClick={() => onDelete(card.id)}
-              className="text-red-500 hover:underline text-sm"
+              className="text-red-500 hover:underline text-sm flex items-center gap-1"
             >
+              <TrashIcon className="w-4 h-4" />
               Delete
             </button>
           </div>

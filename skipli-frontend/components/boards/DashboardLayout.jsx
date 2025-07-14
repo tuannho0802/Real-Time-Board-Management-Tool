@@ -16,7 +16,7 @@ export default function DashboardLayout({
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/signin");
+    navigate("/signin", { replace: true });
   };
 
   const getPageTitle = () => {

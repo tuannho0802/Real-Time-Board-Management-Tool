@@ -164,18 +164,29 @@ export default function CardDetailPage() {
         modalMode === "edit" &&
         selectedTask
       ) {
-        await updateTask(
+        const res = await updateTask(
           boardId,
           cardId,
           selectedTask.id,
           payload
         );
+
+        // Optimistically update task in list
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === selectedTask.id
+              ? res.data
+              : t
+          )
+        );
       } else {
-        await createTask(
+        // Optimistically add the task immediately
+        const res = await createTask(
           boardId,
           cardId,
           payload
         );
+        setTasks((prev) => [...prev, res.data]);
       }
 
       setIsTaskModalOpen(false);
@@ -202,6 +213,11 @@ export default function CardDetailPage() {
     )
       return;
 
+    // Optimistically remove the task
+    setTasks((prev) =>
+      prev.filter((t) => t.id !== taskId)
+    );
+
     try {
       await deleteTask(boardId, cardId, taskId);
     } catch (err) {
@@ -209,6 +225,8 @@ export default function CardDetailPage() {
         "Failed to delete task:",
         err
       );
+
+      fetchAllData(); // fallback in case of error
     }
   };
 
@@ -343,7 +361,7 @@ export default function CardDetailPage() {
       {loading ? (
         <FancyLoader />
       ) : (
-        <div className="p-4">
+        <div className="p-4 bg-white dark:bg-gray-800">
           <Link
             to={`/boards/${boardId}`}
             className="text-blue-500 underline text-sm mb-4 inline-block"
@@ -351,14 +369,14 @@ export default function CardDetailPage() {
             ← Back to Board
           </Link>
 
-          <h1 className="text-3xl font-bold mb-2">
+          <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-1">
             {card?.name}
           </h1>
-          <p className="text-gray-600 mb-4 break-words">
+          <p className="text-gray-600 dark:text-gray-300 mb-6 break-words">
             {card?.description}
           </p>
 
-          <h2 className="text-xl font-semibold mb-4">
+          <h2 className="text-2xl font-semibold text-gray-800 dark:text-white mb-3">
             Tasks
           </h2>
 
@@ -377,68 +395,96 @@ export default function CardDetailPage() {
               setActiveTask(null)
             }
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              {DEFAULT_STATUSES.map(
-                (status) => (
-                  <DroppableColumn
-                    key={status}
-                    id={`column-${status}`}
-                    status={status}
-                    className={
-                      statusColors[status]
-                    }
-                    title={status}
+            {tasks.length === 0 ? (
+              <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+                <p className="text-lg">
+                  There are no tasks yet.
+                </p>
+                <p className="text-sm mt-1">
+                  Click{" "}
+                  <button
+                    type="button"
+                    className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mb-2"
+                    onClick={() => {
+                      setDefaultTaskStatus(
+                        status
+                      );
+                      setModalMode("create");
+                      setSelectedTask(null);
+                      setIsTaskModalOpen(true);
+                    }}
                   >
-                    <button
-                      type="button"
-                      className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mb-2"
-                      onClick={() => {
-                        setDefaultTaskStatus(
-                          status
-                        );
-                        setModalMode("create");
-                        setSelectedTask(null);
-                        setIsTaskModalOpen(
-                          true
-                        );
-                      }}
+                    + Add
+                  </button>{" "}
+                  to create your first task!
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+                {DEFAULT_STATUSES.map(
+                  (status) => (
+                    <DroppableColumn
+                      key={status}
+                      id={`column-${status}`}
+                      status={status}
+                      className={
+                        statusColors[status]
+                      }
+                      title={status}
                     >
-                      + Add
-                    </button>
+                      <button
+                        type="button"
+                        className="text-xs bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded mb-2"
+                        onClick={() => {
+                          setDefaultTaskStatus(
+                            status
+                          );
+                          setModalMode(
+                            "create"
+                          );
+                          setSelectedTask(null);
+                          setIsTaskModalOpen(
+                            true
+                          );
+                        }}
+                      >
+                        + Add
+                      </button>
 
-                    <TaskList
-                      tasks={tasks.filter(
-                        (task) =>
-                          task.status ===
-                            status &&
-                          task.id !==
-                            activeTask?.id
-                      )}
-                      assignedMembers={
-                        assignedMembers
-                      }
-                      onEdit={handleTaskEdit}
-                      onDelete={
-                        handleTaskDelete
-                      }
-                      onUnassign={
-                        handleUnassignMember
-                      }
-                      onOpenAssignModal={(
-                        taskId
-                      ) => {
-                        setTaskIdToAssign(
+                      <TaskList
+                        tasks={tasks.filter(
+                          (task) =>
+                            task.status ===
+                              status &&
+                            task.id !==
+                              activeTask?.id
+                        )}
+                        assignedMembers={
+                          assignedMembers
+                        }
+                        onEdit={handleTaskEdit}
+                        onDelete={
+                          handleTaskDelete
+                        }
+                        onUnassign={
+                          handleUnassignMember
+                        }
+                        onOpenAssignModal={(
                           taskId
-                        );
-                        setIsAssignModalOpen(
-                          true
-                        );
-                      }}
-                    />
-                  </DroppableColumn>
-                )
-              )}
-            </div>
+                        ) => {
+                          setTaskIdToAssign(
+                            taskId
+                          );
+                          setIsAssignModalOpen(
+                            true
+                          );
+                        }}
+                      />
+                    </DroppableColumn>
+                  )
+                )}
+              </div>
+            )}
 
             <DragOverlay>
               {activeTask && (

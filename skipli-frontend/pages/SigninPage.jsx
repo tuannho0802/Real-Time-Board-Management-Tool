@@ -2,6 +2,7 @@ import AuthForm from "../components/AuthForm";
 import { signin } from "../api/auth";
 import { jwtDecode } from "jwt-decode";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function SigninPage() {
   const navigate = useNavigate();
@@ -18,14 +19,20 @@ export default function SigninPage() {
         "user",
         JSON.stringify(user)
       );
-
-      // redirect to dashboard
-      navigate("/dashboard");
+      // after login success
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       alert("Signin failed");
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard", { replace: true }); // block back button and navigate
+    }
+  }, [navigate]);
 
   return (
     <AuthForm
