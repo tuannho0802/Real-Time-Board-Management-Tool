@@ -25,10 +25,8 @@ export default function UsersList({
       .finally(() => setLoading(false));
   }, []);
 
-  // ⏳ Loading state
   if (loading) return <FancyLoader />;
 
-  // ❌ Error state
   if (error) {
     return (
       <div className="p-4">
@@ -37,7 +35,6 @@ export default function UsersList({
     );
   }
 
-  // 😐 No users
   if (users.length === 0) {
     return (
       <div className="p-4">
@@ -48,7 +45,6 @@ export default function UsersList({
     );
   }
 
-  // ✅ Success state
   return (
     <div className="p-4 bg-white dark:bg-gray-800 shadow rounded-lg">
       <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">

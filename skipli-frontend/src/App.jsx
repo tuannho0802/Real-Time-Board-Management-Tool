@@ -11,6 +11,7 @@ import SigninPage from "../pages/SigninPage";
 import Dashboard from "../pages/Dashboard";
 import BoardDetailPage from "../components/boards/BoardDetailPage";
 import CardDetailPage from "../components/cards/CardDetailPage";
+import UsersPage from "../pages/UsersPage";
 
 // auth step
 const PrivateRoute = ({ children }) => {
@@ -43,6 +44,14 @@ export default function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <UsersPage />
             </PrivateRoute>
           }
         />

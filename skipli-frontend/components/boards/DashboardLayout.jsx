@@ -32,6 +32,8 @@ export default function DashboardLayout({
     if (path.includes("/cards/"))
       return "Card Details";
 
+    if (path.includes("/users")) return "Users";
+
     return "Real-Time Board Management Tool";
   };
 
@@ -48,6 +50,12 @@ export default function DashboardLayout({
             className="hover:text-gray-300"
           >
             Dashboard
+          </Link>
+          <Link
+            to="/users"
+            className="hover:text-gray-300"
+          >
+            Users
           </Link>
         </nav>
         <button

@@ -37,12 +37,14 @@ const cardRoutes = require("./routes/card.route");
 const inviteRoutes = require("./routes/invite.route");
 const taskRoutes = require("./routes/task.route");
 const githubRoutes = require("./routes/github.route");
+const userRoutes = require("./routes/user.route");
 
 app.use("/auth", authRoutes);
 app.use("/boards", boardRoutes);
 app.use("/boards", cardRoutes);
 app.use("/boards", inviteRoutes);
 app.use("/boards", taskRoutes);
+app.use("/users", userRoutes);
 app.use("/", githubRoutes);
 
 io.on("connection", (socket) => {
