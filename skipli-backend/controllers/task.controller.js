@@ -1,14 +1,11 @@
 const admin = require("firebase-admin");
 const db = admin.firestore();
 
+// GET all tasks
 exports.getTasks = async (req, res) => {
   try {
     const { id: cardId } = req.params;
-    const snapshot = await db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .get();
+    const snapshot = await db.collection("cards").doc(cardId).collection("tasks").get();
 
     const tasks = snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -25,20 +22,14 @@ exports.getTasks = async (req, res) => {
   }
 };
 
+// GET single task
 exports.getTask = async (req, res) => {
   try {
     const { id: cardId, taskId } = req.params;
-    const taskDoc = await db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .doc(taskId)
-      .get();
+    const taskDoc = await db.collection("cards").doc(cardId).collection("tasks").doc(taskId).get();
 
     if (!taskDoc.exists) {
-      return res
-        .status(404)
-        .json({ error: "Task not found" });
+      return res.status(404).json({ error: "Task not found" });
     }
 
     res.status(200).json({
@@ -54,16 +45,13 @@ exports.getTask = async (req, res) => {
   }
 };
 
+// CREATE task
 exports.createTask = async (req, res) => {
   try {
-    const { title, description, status } =
-      req.body;
+    const { title, description, status } = req.body;
     const { boardId, id: cardId } = req.params;
 
-    if (!cardId)
-      return res
-        .status(400)
-        .json({ error: "cardId is required" });
+    if (!cardId) return res.status(400).json({ error: "cardId is required" });
 
     const newTask = {
       title,
@@ -71,23 +59,18 @@ exports.createTask = async (req, res) => {
       status,
       cardId,
       boardId,
-      ownerId:
-        req.user?.uid ||
-        req.user?.id ||
-        req.user?.email ||
-        "unknown",
+      ownerId: req.user?.uid || req.user?.id || req.user?.email || "unknown",
       createdAt: new Date().toISOString(),
     };
 
-    const taskRef = await db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .add(newTask);
+    const taskRef = await db.collection("cards").doc(cardId).collection("tasks").add(newTask);
+    const response = { id: taskRef.id, ...newTask };
 
-    res
-      .status(201)
-      .json({ id: taskRef.id, ...newTask });
+    res.status(201).json(response);
+
+    
+    const io = req.app.get("io");
+    io.to(`card-${cardId}`).emit("task-created", response);
   } catch (error) {
     res.status(500).json({
       error: "Failed to create task",
@@ -96,28 +79,25 @@ exports.createTask = async (req, res) => {
   }
 };
 
+// UPDATE task
 exports.updateTask = async (req, res) => {
   try {
     const { id: cardId, taskId } = req.params;
     const updates = req.body;
 
-    const taskRef = db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .doc(taskId);
-
+    const taskRef = db.collection("cards").doc(cardId).collection("tasks").doc(taskId);
     const doc = await taskRef.get();
-    if (!doc.exists) {
-      return res
-        .status(404)
-        .json({ error: "Task not found" });
-    }
+
+    if (!doc.exists) return res.status(404).json({ error: "Task not found" });
 
     await taskRef.update(updates);
-    res
-      .status(200)
-      .json({ id: taskId, cardId, ...updates });
+    const updatedTask = { id: taskId, cardId, ...updates };
+
+    res.status(200).json(updatedTask);
+
+    
+    const io = req.app.get("io");
+    io.to(`card-${cardId}`).emit("task-updated", updatedTask);
   } catch (error) {
     res.status(500).json({
       error: "Failed to update task",
@@ -126,25 +106,22 @@ exports.updateTask = async (req, res) => {
   }
 };
 
+// DELETE task
 exports.deleteTask = async (req, res) => {
   try {
     const { id: cardId, taskId } = req.params;
 
-    const taskRef = db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .doc(taskId);
-
+    const taskRef = db.collection("cards").doc(cardId).collection("tasks").doc(taskId);
     const doc = await taskRef.get();
-    if (!doc.exists) {
-      return res
-        .status(404)
-        .json({ error: "Task not found" });
-    }
+
+    if (!doc.exists) return res.status(404).json({ error: "Task not found" });
 
     await taskRef.delete();
     res.status(204).send();
+
+    
+    const io = req.app.get("io");
+    io.to(`card-${cardId}`).emit("task-deleted", taskId);
   } catch (error) {
     res.status(500).json({
       error: "Failed to delete task",
@@ -153,32 +130,26 @@ exports.deleteTask = async (req, res) => {
   }
 };
 
+// ASSIGN member to task
 exports.assignMember = async (req, res) => {
   try {
     const { id: cardId, taskId } = req.params;
     const { memberId } = req.body;
 
-    const taskRef = db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .doc(taskId);
-
+    const taskRef = db.collection("cards").doc(cardId).collection("tasks").doc(taskId);
     const doc = await taskRef.get();
-    if (!doc.exists) {
-      return res
-        .status(404)
-        .json({ error: "Task not found" });
-    }
 
-    await taskRef
-      .collection("assignments")
-      .doc(memberId)
-      .set({
-        assignedAt: new Date().toISOString(),
-      });
+    if (!doc.exists) return res.status(404).json({ error: "Task not found" });
+
+    await taskRef.collection("assignments").doc(memberId).set({
+      assignedAt: new Date().toISOString(),
+    });
 
     res.status(201).json({ taskId, memberId });
+
+    
+    const io = req.app.get("io");
+    io.to(`card-${cardId}`).emit("task-assigned", { taskId, memberId });
   } catch (error) {
     res.status(500).json({
       error: "Failed to assign member",
@@ -187,10 +158,8 @@ exports.assignMember = async (req, res) => {
   }
 };
 
-exports.getAssignedMembers = async (
-  req,
-  res
-) => {
+// GET assigned members
+exports.getAssignedMembers = async (req, res) => {
   try {
     const { id: cardId, taskId } = req.params;
 
@@ -202,12 +171,11 @@ exports.getAssignedMembers = async (
       .collection("assignments")
       .get();
 
-    const members =
-      assignmentsSnapshot.docs.map((doc) => ({
-        taskId,
-        memberId: doc.id,
-        ...doc.data(),
-      }));
+    const members = assignmentsSnapshot.docs.map((doc) => ({
+      taskId,
+      memberId: doc.id,
+      ...doc.data(),
+    }));
 
     res.status(200).json(members);
   } catch (error) {
@@ -218,36 +186,22 @@ exports.getAssignedMembers = async (
   }
 };
 
-exports.removeMemberAssignment = async (
-  req,
-  res
-) => {
+// REMOVE member from task
+exports.removeMemberAssignment = async (req, res) => {
   try {
-    const {
-      id: cardId,
-      taskId,
-      memberId,
-    } = req.params;
+    const { id: cardId, taskId, memberId } = req.params;
 
-    const taskRef = db
-      .collection("cards")
-      .doc(cardId)
-      .collection("tasks")
-      .doc(taskId);
-
+    const taskRef = db.collection("cards").doc(cardId).collection("tasks").doc(taskId);
     const doc = await taskRef.get();
-    if (!doc.exists) {
-      return res
-        .status(404)
-        .json({ error: "Task not found" });
-    }
 
-    await taskRef
-      .collection("assignments")
-      .doc(memberId)
-      .delete();
+    if (!doc.exists) return res.status(404).json({ error: "Task not found" });
 
+    await taskRef.collection("assignments").doc(memberId).delete();
     res.status(204).send();
+
+    
+    const io = req.app.get("io");
+    io.to(`card-${cardId}`).emit("task-unassigned", { taskId, memberId });
   } catch (error) {
     res.status(500).json({
       error: "Failed to remove assignment",

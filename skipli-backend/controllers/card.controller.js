@@ -1,9 +1,5 @@
 const admin = require("firebase-admin");
-
 const db = admin.firestore();
-
-// Because each card belongs to a board, sos the structure is like:
-// boards/{boardId}/cards/{cardId}
 
 // GET /boards/:boardId/cards
 exports.getCards = async (req, res) => {
@@ -49,9 +45,18 @@ exports.createCard = async (req, res) => {
       .collection("cards")
       .add(newCard);
 
-    res
-      .status(201)
-      .json({ id: cardRef.id, ...newCard });
+    const response = {
+      id: cardRef.id,
+      ...newCard,
+    };
+
+    res.status(201).json(response);
+
+    const io = req.app.get("io");
+    io.to(`board-${boardId}`).emit(
+      "card-created",
+      response
+    );
   } catch (error) {
     res.status(500).json({
       error: "Failed to create card",
@@ -102,7 +107,14 @@ exports.updateCard = async (req, res) => {
       .doc(id)
       .update(updates);
 
-    res.status(200).json({ id, ...updates });
+    const updatedCard = { id, ...updates };
+    res.status(200).json(updatedCard);
+
+    const io = req.app.get("io");
+    io.to(`board-${boardId}`).emit(
+      "card-updated",
+      updatedCard
+    );
   } catch (error) {
     res.status(500).json({
       error: "Failed to update card",
@@ -124,6 +136,12 @@ exports.deleteCard = async (req, res) => {
       .delete();
 
     res.status(204).send();
+
+    const io = req.app.get("io");
+    io.to(`board-${boardId}`).emit(
+      "card-deleted",
+      id
+    );
   } catch (error) {
     res.status(500).json({
       error: "Failed to delete card",
