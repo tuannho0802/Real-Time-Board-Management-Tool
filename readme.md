@@ -17,11 +17,12 @@ A Trello-like real-time task management web application built with **React**, **
 
 ## 🛠️ Tech Stack
 
-| Frontend            | Backend           | Realtime  | Auth          | Database  | 3rd Party  |
-| ------------------- | ----------------- | --------- | ------------- | --------- | ---------- |
-| React + TailwindCSS | Node.js + Express | Socket.io | Firebase Auth | Firestore | GitHub API |
+| Frontend           | Backend            | Realtime | Auth           | Database  | 3rd Party     | API Docs   |
+|--------------------|--------------------|----------|----------------|-----------|----------------|------------|
+| React + TailwindCSS| Node.js + Express  | Socket.io| Firebase Auth  | Firestore | GitHub REST API| Swagger UI |
 
 ---
+
 
 ## ⚙️ Getting Started
 
@@ -33,10 +34,11 @@ A Trello-like real-time task management web application built with **React**, **
 
 ### 1. Clone the repository
 
+
 Git clone https://github.com/tuannho0802/Real-Time-Board-Management-Tool
 
-### 2. Environment variables
 
+### 2. Environment variables
 Create a .env file in the root directory and fill in your Firebase & GitHub credentials:
 
 ```
@@ -49,11 +51,9 @@ GITHUB_CLIENT_ID=your_client_id_here
 GITHUB_CLIENT_SECRET=your_client_secret_here
 GITHUB_CALLBACK_URL=http://localhost:5000/auth/github/callback
 ```
-
+---
 ### 3. Run the application
-
 Start the backend:
-
 ```bash
 cd skipli-backend
 
@@ -63,7 +63,6 @@ npm run dev
 ```
 
 Start the frontend:
-
 ```bash
 cd skipli-frontend
 
@@ -71,34 +70,50 @@ npm install
 
 npm run dev
 ```
-
 Visit: http://localhost:5173
+---
+## 📚 API Documentation
 
+The backend includes interactive API documentation using **Swagger UI**.
+
+After starting the backend, you can access the docs at:
+
+📄 [`http://localhost:5000/api-docs`](http://localhost:5000/api-docs)
+
+The Swagger docs include:
+
+- 🧾 `POST /signin` – Sign in with email + verification code  
+- 🧾 `POST /signup` – Register a new user  
+- 📋 `GET /boards` – Get all boards  
+- ➕ `POST /boards` – Create a new board  
+- 🎴 `GET /boards/:boardId/cards` – List cards in a board  
+- ✅ `GET /boards/:boardId/cards/:cardId/tasks` – Get tasks  
+- 🔗 `POST /.../github-attach` – Attach GitHub items  
+- ... and more.
+
+You can test and inspect all endpoints directly from Swagger.
+
+---
 ## 📸 Screenshots
-
-### 🔐 Authentication
-
+ ### 🔐 Authentication
 <img src="./screenshots/signin.png" width="600" />
 <img src="./screenshots/signup.png" width="600" />
 
 ### 👨‍💻 User
-
 <img src="./screenshots/users.png" width="600" />
 <img src="./screenshots/user-profile.png" width="600" />
 
 ### 🧠 Dashboard (Boards)
-
 <img src="./screenshots/dashboard.png" width="600" />
 <img src="./screenshots/create-board.png" width="600" />
 <img src="./screenshots/detail-board.png" width="600" />
 
 ### 📌 Card (Tasks)
-
 <img src="./screenshots/detail-card.png" width="600" />
 <img src="./screenshots/dnd.png" width="600" />
 
+---
 ## 🙏 Acknowledgements
-
 Firebase: https://firebase.google.com/
 
 React: https://react.dev/
@@ -107,10 +122,13 @@ Socket.IO: https://socket.io/
 
 GitHub REST API: https://docs.github.com/en/rest
 
+
 ## Documentation
 
 [Idea: Create a responsive web application using React.js with real-time updates using WebSocket technology.](https://docs.google.com/document/d/1gbtbTnqAmc-lIBXN63c6K5RubBWX8wUll9Is6xd1nds/edit?tab=t.0)
 
+
 ## Authors
 
 - [HoangTuanFT](https://github.com/tuannho0802)
+
