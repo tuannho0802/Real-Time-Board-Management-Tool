@@ -123,7 +123,7 @@ Socket.IO: https://socket.io/
 GitHub REST API: https://docs.github.com/en/rest
 
 
-## Documentation
+## 📝 Documentation
 
 [Idea: Create a responsive web application using React.js with real-time updates using WebSocket technology.](https://docs.google.com/document/d/1gbtbTnqAmc-lIBXN63c6K5RubBWX8wUll9Is6xd1nds/edit?tab=t.0)
 
