@@ -17,9 +17,9 @@ A Trello-like real-time task management web application built with **React**, **
 
 ## 🛠️ Tech Stack
 
-| Frontend            | Backend           | Realtime  | Auth          | Database  | 3rd Party  |
-| ------------------- | ----------------- | --------- | ------------- | --------- | ---------- |
-| React + TailwindCSS | Node.js + Express | Socket.io | Firebase Auth | Firestore | GitHub API |
+| Frontend            | Backend           | Realtime  | Auth          | Database  | 3rd Party  | | API Document|
+| ------------------- | ----------------- | --------- | ------------- | --------- | ---------- | | ----------- |
+| React + TailwindCSS | Node.js + Express | Socket.io | Firebase Auth | Firestore | GitHub API | |   Swagger   |
 
 ---
 
