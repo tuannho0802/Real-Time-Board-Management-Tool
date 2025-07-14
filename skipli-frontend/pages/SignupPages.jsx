@@ -19,6 +19,7 @@ export default function SignupPage() {
   return (
     <AuthForm
       title="Sign Up"
+      mode="signup"
       onSubmit={handleSignup}
     />
   );

@@ -1,22 +1,38 @@
 import {
   Link,
   useNavigate,
+  useLocation,
 } from "react-router-dom";
 
 export default function DashboardLayout({
   children,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const user = JSON.parse(
-    // save token at local storage
     localStorage.getItem("user")
   );
 
-  // logout handler
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     navigate("/signin");
+  };
+
+  const getPageTitle = () => {
+    const path = location.pathname;
+
+    if (path === "/dashboard")
+      return "Dashboard";
+    if (
+      path.startsWith("/boards/") &&
+      !path.includes("/cards/")
+    )
+      return "Board Details";
+    if (path.includes("/cards/"))
+      return "Card Details";
+
+    return "Real-Time Board Management Tool";
   };
 
   return (
@@ -46,7 +62,7 @@ export default function DashboardLayout({
       <main className="flex-1 bg-gray-50 p-6 overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">
-            Dashboard
+            {getPageTitle()}
           </h1>
           <div className="text-sm text-gray-600">
             {user?.email}

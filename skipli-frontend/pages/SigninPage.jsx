@@ -30,6 +30,7 @@ export default function SigninPage() {
   return (
     <AuthForm
       title="Sign In"
+      mode="signin"
       onSubmit={handleSignin}
     />
   );

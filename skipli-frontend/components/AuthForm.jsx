@@ -3,13 +3,20 @@ import { useState } from "react";
 export default function AuthForm({
   title,
   onSubmit,
+  mode = "signin",
 }) {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit({ email, verificationCode: code });
+
+    const data =
+      mode === "signin"
+        ? { email, verificationCode: code }
+        : { email };
+
+    onSubmit(data);
   };
 
   return (
@@ -32,16 +39,18 @@ export default function AuthForm({
         required
       />
 
-      <input
-        type="text"
-        value={code}
-        placeholder="Verification Code"
-        onChange={(e) =>
-          setCode(e.target.value)
-        }
-        className="w-full px-3 py-2 border rounded"
-        required
-      />
+      {mode === "signin" && (
+        <input
+          type="text"
+          value={code}
+          placeholder="Verification Code"
+          onChange={(e) =>
+            setCode(e.target.value)
+          }
+          className="w-full px-3 py-2 border rounded"
+          required
+        />
+      )}
 
       <button
         type="submit"
