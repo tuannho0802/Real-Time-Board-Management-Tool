@@ -31,6 +31,7 @@ import {
   unassignMember,
 } from "../../api/task";
 import { statusColors } from "../tasks/taskStatusColors";
+import { socket } from "../../socket";
 
 const DEFAULT_STATUSES = [
   "icebox",
@@ -108,6 +109,49 @@ export default function CardDetailPage() {
     fetchAllData();
   }, [fetchAllData]);
 
+  //socket
+  useEffect(() => {
+    socket.emit("joinCardRoom", cardId);
+
+    socket.on("task:created", (newTask) => {
+      setTasks((prev) => {
+        const exists = prev.find(
+          (t) => t.id === newTask.id
+        );
+        if (exists) return prev;
+        return [...prev, newTask];
+      });
+    });
+
+    socket.on("task:updated", (updatedTask) => {
+      setTasks((prev) =>
+        prev.map((t) =>
+          t.id === updatedTask.id
+            ? updatedTask
+            : t
+        )
+      );
+    });
+
+    socket.on(
+      "task:deleted",
+      (deletedTaskId) => {
+        setTasks((prev) =>
+          prev.filter(
+            (t) => t.id !== deletedTaskId
+          )
+        );
+      }
+    );
+
+    return () => {
+      socket.emit("leaveCardRoom", cardId);
+      socket.off("task:created");
+      socket.off("task:updated");
+      socket.off("task:deleted");
+    };
+  }, [cardId]);
+
   const handleTaskSave = async (data) => {
     try {
       const payload = {
@@ -120,26 +164,18 @@ export default function CardDetailPage() {
         modalMode === "edit" &&
         selectedTask
       ) {
-        const res = await updateTask(
+        await updateTask(
           boardId,
           cardId,
           selectedTask.id,
           payload
         );
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === selectedTask.id
-              ? res.data
-              : t
-          )
-        );
       } else {
-        const res = await createTask(
+        await createTask(
           boardId,
           cardId,
           payload
         );
-        setTasks((prev) => [...prev, res.data]);
       }
 
       setIsTaskModalOpen(false);
@@ -168,9 +204,6 @@ export default function CardDetailPage() {
 
     try {
       await deleteTask(boardId, cardId, taskId);
-      setTasks((prev) =>
-        prev.filter((t) => t.id !== taskId)
-      );
     } catch (err) {
       console.error(
         "Failed to delete task:",
